@@ -1,6 +1,7 @@
 import pyodbc
 
 
+
 class DatabaseManager:
     def __init__(self, driver: str, server: str, username: str, password: str, database: str):
         pass  # TODO
