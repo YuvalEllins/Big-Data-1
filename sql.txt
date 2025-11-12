@@ -3,7 +3,11 @@
 
 
 -- b. Create a table AnnualSummary
-
+CREATE TABLE AnnualSummery(
+PROD_YEAR BIGINT PRIMARY KEY,
+FID BIGINT,s
+RATED_ABOVE_8 BIGINT
+FOREIGN KEY (FID) REFERENCES Films(FID))
 
 
 -- c. Create a trigger AutoAddFID
@@ -11,10 +15,27 @@
 
 
 -- d. Create a function GetBestFilm
+RETURNS BIGINT
+AS
+BEGIN
+    DECLARE @BestFilmID BIGINT
+
+    SELECT @BestFilmID = FID
+    FROM Films
+    WHERE PROD_YEAR = @P_YEAR AND RATING = (
+        SELECT MAX(RATING)
+        FROM Films
+        WHERE PROD_YEAR = @P_YEAR
+    )
+
+    RETURN @BestFilmID
+END
 
 
 
 -- e. Create a function GetNumAbove8
+RETURN BIGINT 
+AS
 
 
 
