@@ -1,0 +1,21 @@
+-- a. Create a table Films
+
+
+
+-- b. Create a table AnnualSummary
+
+
+
+-- c. Create a trigger AutoAddFID
+
+
+
+-- d. Create a function GetBestFilm
+
+
+
+-- e. Create a function GetNumAbove8
+
+
+
+-- f. Create a procedure AddSummaryItems
