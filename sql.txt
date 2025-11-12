@@ -3,12 +3,6 @@
 
 
 -- b. Create a table AnnualSummary
-CREATE TABLE AnnualSummery(
-PROD_YEAR BIGINT PRIMARY KEY,
-FID BIGINT,s
-RATED_ABOVE_8 BIGINT
-FOREIGN KEY (FID) REFERENCES Films(FID))
-
 
 -- c. Create a trigger AutoAddFID
 
