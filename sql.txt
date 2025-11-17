@@ -9,82 +9,94 @@ CREATE TABLE Films(
 
 
 -- b. Create a table AnnualSummary
-CREATE TABLE AnnualSummary(
+CREATE TABLE AnnualSummary (
     PROD_YEAR BIGINT NOT NULL PRIMARY KEY,
-    FID BIGINT NOT NULL Foreign Key (FID) REFERENCES (Films),
-    RATED_ABOVE_8 BIGINT NOT NULL CHECK (RATED_ABOVE_8 >8)
+    FID BIGINT NOT NULL,
+    RATED_ABOVE_8 BIGINT NOT NULL,
+    FOREIGN KEY (FID) REFERENCES Films(FID)
 );
 
+
 -- c. Create a trigger AutoAddFID
+GO
 CREATE TRIGGER AutoAddFID
 ON Films
 INSTEAD OF INSERT
 AS
 BEGIN
-  SET NOCOUNT ON;
+    SET NOCOUNT ON;
 
-  ;WITH next_id AS (
-    SELECT COALESCE(MAX(FID), -1) + 1 AS start_id
-    FROM Films
-  ),
-  ins AS (
-    SELECT ROW_NUMBER() OVER (ORDER BY (SELECT 1)) - 1 AS rn,
-           TITLE, PROD_YEAR, RATING
-    FROM inserted
-  )
-  INSERT INTO Films (FID, TITLE, PROD_YEAR, RATING)
-  SELECT n.start_id + i.rn, i.TITLE, i.PROD_YEAR, i.RATING
-  FROM ins i CROSS JOIN next_id n;
+    ;WITH next_id AS (
+        SELECT COALESCE(MAX(FID), -1) + 1 AS start_id
+        FROM Films
+    ),
+    ins AS (
+        SELECT 
+            ROW_NUMBER() OVER (ORDER BY (SELECT 1)) - 1 AS rn,
+            TITLE, PROD_YEAR, RATING
+        FROM inserted
+    )
+    INSERT INTO Films (FID, TITLE, PROD_YEAR, RATING)
+    SELECT 
+        n.start_id + i.rn,
+        i.TITLE,
+        i.PROD_YEAR,
+        i.RATING
+    FROM ins i 
+    CROSS JOIN next_id n;
 END
-
+GO
 
 
 
 -- d. Create a function GetBestFilm
+GO
+CREATE FUNCTION GetBestFilm (@P_YEAR BIGINT)
 RETURNS BIGINT
 AS
 BEGIN
-    DECLARE @BestFilmID BIGINT
+    DECLARE @BestFilmID BIGINT;
 
-    SELECT @BestFilmID = FID
+    SELECT TOP (1) @BestFilmID = FID
     FROM Films
-    WHERE PROD_YEAR = @P_YEAR AND RATING = (
-        SELECT MAX(RATING)
-        FROM Films
-        WHERE PROD_YEAR = @P_YEAR
-    )
+    WHERE PROD_YEAR = @P_YEAR
+    ORDER BY RATING DESC, FID ASC;
 
-    RETURN @BestFilmID
+    RETURN @BestFilmID;
 END
+GO
 
 
 
 -- e. Create a function GetNumAbove8
+GO
 CREATE FUNCTION GetNumAbove8 (@P_YEAR BIGINT)
 RETURNS BIGINT
 AS
 BEGIN
-    DECLARE @NumFilmsAbove8 BIGINT;
-    SET @NumFilmsAbove8 = (
+    RETURN (
         SELECT COUNT(*)
         FROM Films
-        WHERE PROD_YEAR = @P_YEAR AND RATING > 8
+        WHERE PROD_YEAR = @P_YEAR
+          AND RATING > 8
     );
-    RETURN @NumFilmsAbove8;
-END;
+END
+GO
+
 
 
 -- f. Create a procedure AddSummaryItems
-CREATE PROCEDURE dbo.AddSummaryItems
+GO
+CREATE PROCEDURE AddSummaryItems
 AS
 BEGIN
+    SET NOCOUNT ON;
+
     INSERT INTO AnnualSummary (PROD_YEAR, FID, RATED_ABOVE_8)
-    SELECT 
-        DISTINCT PROD_YEAR,
-        dbo.GetBestFilm(PROD_YEAR),
-        dbo.GetNumAbove8(PROD_YEAR)
-    FROM 
-        Films
-    WHERE 
-        PROD_YEAR IS NOT NULL;
+    SELECT DISTINCT
+        PROD_YEAR,
+        GetBestFilm(PROD_YEAR),
+        GetNumAbove8(PROD_YEAR)
+    FROM Films;
 END
+GO
