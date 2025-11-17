@@ -95,8 +95,8 @@ BEGIN
     INSERT INTO AnnualSummary (PROD_YEAR, FID, RATED_ABOVE_8)
     SELECT DISTINCT
         PROD_YEAR,
-        GetBestFilm(PROD_YEAR),
-        GetNumAbove8(PROD_YEAR)
+        dbo.GetBestFilm(PROD_YEAR),
+        dbo.GetNumAbove8(PROD_YEAR)
     FROM Films;
 END
 GO
